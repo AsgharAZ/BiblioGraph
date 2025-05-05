@@ -4,7 +4,6 @@ from dotenv import load_dotenv
 import os
 load_dotenv("common/.env")
 
-
 driver = GraphDatabase.driver(os.getenv("NEO4J_URI"), auth=(os.getenv("NEO4J_NAME"), os.getenv("NEO4J_PASSWORD")))
 
 def run_query(query, params={}):
