@@ -180,29 +180,6 @@ def predict():
     print(accuracy_score(y_test, y_pred))
     return rf, x_test, y_test, y_pred
 
-def debug():
-    data = get_data()
-    # drop column 'preferentialAttachment'
-    data = data.drop(columns=['preferentialAttachment'], axis=1)
-    print(len(data))
-    # replace NaN values in each row with the mean of that column
-    data = data.fillna(data.mean())
-    print(data.describe())
-    print(data.head())
-    print(len(data))
-    X = data.drop('output', axis=1)
-    Y = data['output'].to_list()
-    
-    x_train, x_test, y_train, y_test = train_test_split(X, Y, test_size=0.4, train_size=0.6, random_state=0)
-    rf = RandomForestClassifier(n_estimators=100, random_state=0)
-    rf.fit(x_train, y_train)
-    y_pred = rf.predict(x_test)
-    print("Confusion Matrix:")
-    print(confusion_matrix(y_test, y_pred))
-    print("Classification Report:")
-    print(classification_report(y_test, y_pred))
-    print("Accuracy:")
-    print(accuracy_score(y_test, y_pred))
     
 if __name__ == "__main__":
     predict()
