@@ -16,6 +16,23 @@ def close_driver():
     driver.close()
     
     
+class Neo4jOperation(object):
+    def __init__(self, query, setup_query=None, teardown_query=None, params=None):
+        self.query = query
+        self.setup_query = setup_query
+        self.teardown_query = teardown_query
+        
+    def run(self):
+        # print variable name
+        print(f"Running query: {self.query}")
+        if self.setup_query:
+            run_query(self.setup_query)
+        result = run_query(self.query)
+        if self.teardown_query:
+            run_query(self.teardown_query)
+        return result
+    
+    
 # test the connection
 if __name__ == "__main__":
     try:

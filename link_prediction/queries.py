@@ -1,25 +1,8 @@
 import pandas as pd
-from common.neo4j_utils import run_query, close_driver
+from common.neo4j_utils import run_query, close_driver, Neo4jOperation
 
-FEATURE_SET_RATIO = 0.6
-NEGATIVE_SAMPLE_RATIO = 1
-
-class Neo4jOperation(object):
-    def __init__(self, query, setup_query=None, teardown_query=None, params=None):
-        self.query = query
-        self.setup_query = setup_query
-        self.teardown_query = teardown_query
-        
-    def run(self):
-        # print variable name
-        print(f"Running query: {self.query}")
-        if self.setup_query:
-            run_query(self.setup_query)
-        result = run_query(self.query)
-        if self.teardown_query:
-            run_query(self.teardown_query)
-        return result
-    
+FEATURE_SET_RATIO = 0.8
+TRAIN_TEST_RATIO = 1 - FEATURE_SET_RATIO
 
 create_coauthorship_query = Neo4jOperation("""
 MATCH (s1 :Author)-[:WROTE]->(:Paper)<-[:WROTE]-(s2 :Author)
@@ -55,13 +38,13 @@ DELETE r;
 
 create_negative_train_test_query = Neo4jOperation("""
 MATCH (s1 :Author),(s2 :Author)
-WHERE NOT EXISTS {(s1)-[:COAUTHORS]-(s2)} 
+WHERE NOT EXISTS {{(s1)-[:COAUTHORS]-(s2)}} 
       AND s1 < s2
-      AND rand() > 0.9
+      AND rand() <= {NEGATIVE_SAMPLE_RATIO}
 WITH s1,s2
-LIMIT NEGATIVE_SAMPLE_LIMIT
+LIMIT {NEGATIVE_SAMPLE_LIMIT}
 MERGE (s1)-[:NEGATIVE_TEST_TRAIN]->(s2);
-""")
+""".format(NEGATIVE_SAMPLE_LIMIT=int(50000*(TRAIN_TEST_RATIO)), NEGATIVE_SAMPLE_RATIO=TRAIN_TEST_RATIO))
 
 set_network_distance_query = Neo4jOperation("""
 MATCH (s1)-[r:TEST_TRAIN|NEGATIVE_TEST_TRAIN]->(s2)
@@ -141,14 +124,16 @@ def get_data(rerun: bool = False) -> pd.DataFrame:
             create_coauthorship_query.run()
             create_feature_set_query.run()
             positive_size = create_train_test_and_return_size_query.run()
+            print(f"Positive size: {positive_size}")
             positive_size = positive_size.iloc[0]['result']
             print(f"Positive size: {positive_size}")
-            create_negative_train_test_query.query.replace("NEGATIVE_SAMPLE_LIMIT", str(int(positive_size) * NEGATIVE_SAMPLE_RATIO))
+            # create_negative_train_test_query.query.replace("NEGATIVE_SAMPLE_LIMIT", str(int(positive_size) * NEGATIVE_SAMPLE_RATIO))
+            create_negative_train_test_query.run()
             set_network_distance_query.run()
             set_preferencial_attachment_query.run()
             set_common_neighbors_query.run()
             set_adamic_adar_query.run()
-            # set_clustering_coefficient_query.run()
+            # set_clustering_coefficient_query.run() TODO: uncomment this line to add clustering coefficient feature
         return extract_features_query.run()
     except Exception as e:
         raise e

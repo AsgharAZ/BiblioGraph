@@ -1,8 +1,13 @@
 // clear the database for incidental problems
 CALL apoc.periodic.iterate(
-    "MATCH (n) RETURN n",
-    "DETACH DELETE n",
-    {batchSize: 10000, parallel: true}
+  "MATCH ()-[r]->() RETURN r",
+  "DELETE r",
+  {batchSize: 10000, parallel: false}
+);
+CALL apoc.periodic.iterate(
+  "MATCH (n) RETURN n",
+  "DELETE n",
+  {batchSize: 10000, parallel: false}
 );
 
 CREATE INDEX IF NOT EXISTS FOR (a:Author) ON (a.authorId);
