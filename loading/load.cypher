@@ -58,7 +58,8 @@ CALL {
         paper.paperYear = toInteger(row.`Paper Year`), // Convert year to integer
         paper.paperUrl = row.`Paper URL`,
         paper.paperCitationCount = toInteger(row.`Paper Citation Count`), // Convert citation count to integer
-        paper.fieldsOfStudy = row.`Fields of Study`,
+        // Removing Fields of study from data since 95% of the fields are empty and is non significant to our use case
+        // paper.fieldsOfStudy = row.`Fields of Study`,
         paper.journalVolume = row.`Journal Volume`,
         paper.journalDate = row.`Journal Date`
     // ON MATCH SET // Add any properties you want to update on existing nodes here
