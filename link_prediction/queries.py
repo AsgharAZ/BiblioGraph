@@ -1,7 +1,7 @@
 import pandas as pd
 from common.neo4j_utils import run_query, close_driver, Neo4jOperation
 
-FEATURE_SET_RATIO = 0.8
+FEATURE_SET_RATIO = 0.5
 TRAIN_TEST_RATIO = 1 - FEATURE_SET_RATIO
 
 create_coauthorship_query = Neo4jOperation("""

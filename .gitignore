@@ -1,3 +1,4 @@
 raw_data/
 venv/
 loading/*.csv
+__pycache__/
